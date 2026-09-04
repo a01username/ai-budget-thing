@@ -75,7 +75,9 @@ function getHorizon(period) {
   const date = new Date(today);
   if (period === "day") date.setDate(date.getDate() + 1);
   if (period === "week") date.setDate(date.getDate() + 7);
+  if (period === "twoWeeks") date.setDate(date.getDate() + 14);
   if (period === "month") date.setMonth(date.getMonth() + 1);
+  if (period === "twoMonths") date.setMonth(date.getMonth() + 2);
   return date;
 }
 
@@ -162,8 +164,8 @@ function drawBalanceChart() {
   const muted = styles.getPropertyValue("--muted").trim();
   const accent = styles.getPropertyValue("--accent").trim();
   const softLine = styles.getPropertyValue("--soft-line").trim();
-  const periods = ["current", "day", "week", "month"];
-  const labels = ["Now", "+1 day", "+1 week", "+1 month"];
+  const periods = ["current", "day", "week", "twoWeeks", "month", "twoMonths"];
+  const labels = ["Now", "1d", "1w", "2w", "1m", "2m"];
   const values = periods.map(projectedBalance);
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
