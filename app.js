@@ -116,7 +116,12 @@ function render() {
   $("#countExpenses").textContent = counts.expenses;
 
   $$(".filter-button").forEach((button) => button.classList.toggle("active", button.dataset.filter === state.filter));
-  const title = state.filter === "general" ? "General" : state.filter[0].toUpperCase() + state.filter.slice(1);
+  const title = {
+    general: "General",
+    loans: "Loans",
+    subscriptions: "Subscriptions",
+    expenses: "Transactions"
+  }[state.filter];
   $("#ledgerTitle").textContent = title;
 
   const visible = state.transactions
