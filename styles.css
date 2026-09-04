@@ -106,8 +106,6 @@ button { color: inherit; }
 }
 
 .view-trigger { width: 170px; font-size: .9rem; }
-.period-trigger-label, .view-trigger-label { display: flex; align-items: center; gap: 8px; }
-.period-symbol, .view-symbol { font-size: 1.15rem; line-height: 1; }
 
 .chevron {
   width: 17px;
@@ -231,6 +229,7 @@ button { color: inherit; }
 .xp-bar-area {
   --xp-position: 0%;
   padding-top: 42px;
+  padding-bottom: 54px;
   position: relative;
 }
 
@@ -259,7 +258,16 @@ button { color: inherit; }
   transition: width .28s ease;
 }
 
-.xp-percent { margin: 10px 0 0; font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1; }
+.xp-percent {
+  position: absolute;
+  bottom: 0;
+  left: clamp(48px, var(--xp-position), calc(100% - 48px));
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  line-height: 1;
+  white-space: nowrap;
+}
 
 .balance-note { margin: 12px 0 0; color: var(--muted); font-size: .92rem; }
 
@@ -413,15 +421,14 @@ form input:focus, form select:focus { outline: 3px solid var(--accent); outline-
   .app-shell { width: calc(100% - 20px); margin: 10px; min-height: calc(100vh - 20px); }
   .topbar { height: 80px; padding: 12px; }
   .period-trigger { width: 160px; height: 50px; }
-  .view-trigger { width: 50px; height: 50px; padding: 0; justify-content: center; }
-  .view-trigger #viewLabel, .view-trigger .chevron { display: none; }
+  .view-trigger { width: 125px; height: 50px; font-size: .78rem; }
   .view-menu { width: 160px; }
   .add-button { width: 50px; height: 50px; }
   .theme-button { width: 50px; height: 50px; padding: 0; justify-content: center; }
   .theme-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .balance-hero { min-height: 155px; padding-top: 10px; }
-  .xp-view { min-height: 205px; }
-  .xp-bar-area { padding-top: 34px; }
+  .xp-view { min-height: 225px; }
+  .xp-bar-area { padding-top: 34px; padding-bottom: 48px; }
   .ledger { padding: 22px 14px 40px; }
   .transaction-row { grid-template-columns: minmax(120px, 1fr) 90px 28px; gap: 9px; padding: 10px 0; }
   .status { display: none; }
@@ -432,11 +439,12 @@ form input:focus, form select:focus { outline: 3px solid var(--accent); outline-
   .type-trigger { width: 220px; }
 }
 
-@media (max-width: 400px) {
-  .period-trigger { width: 50px; padding: 0; justify-content: center; }
-  .period-trigger #periodLabel, .period-trigger .chevron { display: none; }
+@media (max-width: 520px) {
+  .topbar { height: 142px; flex-wrap: wrap; gap: 8px; }
+  .left-controls { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .period-trigger, .view-trigger { width: 100%; font-size: .78rem; }
   .period-menu { width: 160px; }
-  .left-controls, .top-actions { gap: 8px; }
+  .top-actions { margin-left: auto; gap: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

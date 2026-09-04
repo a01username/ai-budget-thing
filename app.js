@@ -93,7 +93,7 @@ function projectedBalance(period) {
   let projected = state.balance;
 
   state.transactions.forEach((entry) => {
-    let occurrence = new Date(`${entry.date}T12:00:00`);
+    let occurrence = startOfDay(new Date(`${entry.date}T12:00:00`));
     if (entry.status === "upcoming" && occurrence > today && occurrence <= horizon) projected += entry.amount;
 
     if (entry.category === "subscriptions" && entry.frequency) {
