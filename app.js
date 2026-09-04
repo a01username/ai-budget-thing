@@ -1,4 +1,5 @@
 const STORAGE_KEY = "balance-finance-tracker-v2";
+const THEME_KEY = "balance-finance-tracker-theme";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -31,6 +32,14 @@ let state = loadState();
 let selectedType = "expenses";
 let lastFocused = null;
 let toastTimer;
+
+function applyTheme(theme) {
+  const isDark = theme === "dark";
+  document.documentElement.dataset.theme = theme;
+  $("#themeToggle").setAttribute("aria-pressed", String(isDark));
+  $("#themeLabel").textContent = isDark ? "Light mode" : "Dark mode";
+  $("#themeToggle").setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+}
 
 function loadState() {
   try {
@@ -233,6 +242,11 @@ $("#transactionList").addEventListener("click", (event) => {
 });
 
 $("#openAdd").addEventListener("click", openPanel);
+$("#themeToggle").addEventListener("click", () => {
+  const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  localStorage.setItem(THEME_KEY, nextTheme);
+  applyTheme(nextTheme);
+});
 $("#emptyAdd").addEventListener("click", openPanel);
 $("#closeAdd").addEventListener("click", closePanel);
 $("#modalBackdrop").addEventListener("mousedown", (event) => { if (event.target === $("#modalBackdrop")) closePanel(); });
@@ -295,4 +309,5 @@ function setDefaultDates() {
 }
 
 setDefaultDates();
+applyTheme(localStorage.getItem(THEME_KEY) || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
 render();

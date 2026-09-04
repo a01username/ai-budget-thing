@@ -23,14 +23,20 @@
           </div>
         </div>
 
-        <button class="add-button" id="openAdd" type="button" aria-label="Add a transaction">
-          <span aria-hidden="true"></span>
-        </button>
+        <div class="top-actions">
+          <button class="theme-button" id="themeToggle" type="button" aria-pressed="false">
+            <span class="theme-symbol" aria-hidden="true">◐</span>
+            <span class="theme-label" id="themeLabel">Dark mode</span>
+          </button>
+          <button class="add-button" id="openAdd" type="button" aria-label="Add a transaction">
+            <span aria-hidden="true"></span>
+          </button>
+        </div>
       </header>
 
       <section class="balance-hero" aria-live="polite">
         <p class="balance-kicker" id="balanceKicker">CURRENT BALANCE</p>
-        <h1 id="balanceAmount">$20.00</h1>
+        <h1 id="balanceAmount">$0.00</h1>
         <p class="balance-note" id="balanceNote">Available now</p>
       </section>
 
