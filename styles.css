@@ -68,9 +68,9 @@ button { color: inherit; }
   padding: 18px 20px;
 }
 
-.period-picker, .type-picker { position: relative; z-index: 4; }
+.left-controls, .top-actions { display: flex; align-items: flex-start; gap: 10px; }
 
-.top-actions { display: flex; align-items: flex-start; gap: 10px; }
+.period-picker, .view-picker, .type-picker { position: relative; z-index: 4; }
 
 .theme-button {
   height: 56px;
@@ -90,7 +90,7 @@ button { color: inherit; }
 
 .theme-symbol { font-size: 1.3rem; line-height: 1; }
 
-.period-trigger, .type-trigger {
+.period-trigger, .view-trigger, .type-trigger {
   width: 198px;
   height: 54px;
   display: flex;
@@ -105,6 +105,10 @@ button { color: inherit; }
   text-transform: uppercase;
 }
 
+.view-trigger { width: 170px; font-size: .9rem; }
+.period-trigger-label, .view-trigger-label { display: flex; align-items: center; gap: 8px; }
+.period-symbol, .view-symbol { font-size: 1.15rem; line-height: 1; }
+
 .chevron {
   width: 17px;
   height: 17px;
@@ -116,7 +120,7 @@ button { color: inherit; }
 
 [aria-expanded="true"] .chevron { transform: rotate(225deg) translate(-3px, -1px); }
 
-.period-menu, .type-menu {
+.period-menu, .view-menu, .type-menu {
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
@@ -126,7 +130,7 @@ button { color: inherit; }
   box-shadow: 6px 6px 0 var(--ink);
 }
 
-.period-menu button, .type-menu button {
+.period-menu button, .view-menu button, .type-menu button {
   display: block;
   width: 100%;
   padding: 12px;
@@ -137,8 +141,9 @@ button { color: inherit; }
   cursor: pointer;
 }
 
-.period-menu button:last-child, .type-menu button:last-child { border-bottom: 0; }
+.period-menu button:last-child, .view-menu button:last-child, .type-menu button:last-child { border-bottom: 0; }
 .period-menu button:hover, .period-menu button:focus-visible,
+.view-menu button:hover, .view-menu button:focus-visible,
 .type-menu button:hover, .type-menu button:focus-visible { background: var(--accent); outline: 0; }
 
 .add-button, .close-button {
@@ -198,6 +203,50 @@ button { color: inherit; }
   letter-spacing: -.065em;
   font-weight: 500;
 }
+
+.balance-view[hidden] { display: none; }
+
+.line-view {
+  width: min(760px, 100%);
+  min-height: 168px;
+  margin: 0 auto;
+}
+
+#balanceChart {
+  display: block;
+  width: 100%;
+  height: 168px;
+}
+
+.xp-view {
+  width: min(700px, 100%);
+  min-height: 130px;
+  margin: 0 auto;
+  padding-top: 10px;
+}
+
+.xp-level { margin: 0 0 15px; font-size: clamp(2rem, 5vw, 3.4rem); line-height: 1; }
+.xp-level strong { font-weight: 500; }
+
+.xp-track {
+  height: 34px;
+  overflow: hidden;
+  border: 3px solid var(--ink);
+  background: var(--white);
+  position: relative;
+}
+
+.xp-fill {
+  width: 0;
+  height: 100%;
+  background: var(--accent);
+  border-right: 3px solid var(--ink);
+  transition: width .28s ease;
+}
+
+.xp-fill[style*="width: 0"] { border-right: 0; }
+.xp-scale { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: var(--muted); font-size: .74rem; }
+.xp-scale span:nth-child(2) { color: var(--ink); font-weight: 700; }
 
 .balance-note { margin: 12px 0 0; color: var(--muted); font-size: .92rem; }
 
@@ -351,6 +400,9 @@ form input:focus, form select:focus { outline: 3px solid var(--accent); outline-
   .app-shell { width: calc(100% - 20px); margin: 10px; min-height: calc(100vh - 20px); }
   .topbar { height: 80px; padding: 12px; }
   .period-trigger { width: 160px; height: 50px; }
+  .view-trigger { width: 50px; height: 50px; padding: 0; justify-content: center; }
+  .view-trigger #viewLabel, .view-trigger .chevron { display: none; }
+  .view-menu { width: 160px; }
   .add-button { width: 50px; height: 50px; }
   .theme-button { width: 50px; height: 50px; padding: 0; justify-content: center; }
   .theme-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
@@ -363,6 +415,13 @@ form input:focus, form select:focus { outline: 3px solid var(--accent); outline-
   .delete-entry { grid-column: 3; grid-row: 1 / 3; }
   .add-panel { border-left: 0; padding: 18px 18px 36px; }
   .type-trigger { width: 220px; }
+}
+
+@media (max-width: 400px) {
+  .period-trigger { width: 50px; padding: 0; justify-content: center; }
+  .period-trigger #periodLabel, .period-trigger .chevron { display: none; }
+  .period-menu { width: 160px; }
+  .left-controls, .top-actions { gap: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

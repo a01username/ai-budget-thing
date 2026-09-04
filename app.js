@@ -25,6 +25,7 @@ const defaultState = {
   balance: 0,
   filter: "general",
   period: "current",
+  view: "amount",
   transactions: []
 };
 
@@ -44,7 +45,9 @@ function applyTheme(theme) {
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return saved && Array.isArray(saved.transactions) ? saved : structuredClone(defaultState);
+    return saved && Array.isArray(saved.transactions)
+      ? { ...structuredClone(defaultState), ...saved, transactions: saved.transactions }
+      : structuredClone(defaultState);
   } catch {
     return structuredClone(defaultState);
   }
@@ -105,13 +108,139 @@ function projectedBalance(period) {
   return projected;
 }
 
+function renderBalanceVisualization(value, periodLabels, periodNotes) {
+  const viewLabels = { amount: "Amount", line: "Line graph", xp: "XP bar" };
+  const activeView = viewLabels[state.view] ? state.view : "amount";
+  state.view = activeView;
+  $("#viewLabel").textContent = viewLabels[activeView];
+  $$("#viewMenu [role='option']").forEach((option) => {
+    option.setAttribute("aria-selected", String(option.dataset.view === activeView));
+  });
+
+  $("#amountView").hidden = activeView !== "amount";
+  $("#lineView").hidden = activeView !== "line";
+  $("#xpView").hidden = activeView !== "xp";
+
+  if (activeView === "line") {
+    $("#balanceNote").textContent = `${periodLabels[state.period]}: ${money(value)} · select a timeframe to highlight it`;
+    requestAnimationFrame(drawBalanceChart);
+    return;
+  }
+
+  if (activeView === "xp") {
+    const totalCents = Math.round(Math.max(0, value) * 100);
+    const level = Math.floor(totalCents / 100);
+    const progress = totalCents % 100;
+    $("#xpLevel").textContent = level;
+    $("#xpFill").style.width = `${progress}%`;
+    $("#xpProgress").textContent = `${progress}¢ toward Level ${level + 1}`;
+    $("#xpTrack").setAttribute("aria-valuenow", progress);
+    $("#xpTrack").setAttribute("aria-valuetext", `${progress} percent toward level ${level + 1}`);
+    $("#balanceNote").textContent = value < 0 ? "XP progress starts at a $0.00 balance" : periodNotes[state.period];
+    return;
+  }
+
+  $("#balanceNote").textContent = periodNotes[state.period];
+}
+
+function drawBalanceChart() {
+  if (state.view !== "line" || $("#lineView").hidden) return;
+  const canvas = $("#balanceChart");
+  const width = Math.max(260, canvas.getBoundingClientRect().width);
+  const height = 168;
+  const scale = window.devicePixelRatio || 1;
+  canvas.width = Math.round(width * scale);
+  canvas.height = Math.round(height * scale);
+  const context = canvas.getContext("2d");
+  context.setTransform(scale, 0, 0, scale, 0, 0);
+
+  const styles = getComputedStyle(document.documentElement);
+  const ink = styles.getPropertyValue("--ink").trim();
+  const muted = styles.getPropertyValue("--muted").trim();
+  const accent = styles.getPropertyValue("--accent").trim();
+  const softLine = styles.getPropertyValue("--soft-line").trim();
+  const periods = ["current", "day", "week", "month"];
+  const labels = ["Now", "+1 day", "+1 week", "+1 month"];
+  const values = periods.map(projectedBalance);
+  const minimum = Math.min(...values);
+  const maximum = Math.max(...values);
+  const spread = Math.max(1, maximum - minimum);
+  const lower = minimum - spread * .2;
+  const upper = maximum + spread * .2;
+  const padding = { left: 58, right: 18, top: 15, bottom: 29 };
+  const chartWidth = width - padding.left - padding.right;
+  const chartHeight = height - padding.top - padding.bottom;
+  const x = (index) => padding.left + (chartWidth * index) / (values.length - 1);
+  const y = (number) => padding.top + ((upper - number) / (upper - lower)) * chartHeight;
+
+  context.clearRect(0, 0, width, height);
+  context.font = "11px Arial, sans-serif";
+  context.textBaseline = "middle";
+  context.strokeStyle = softLine;
+  context.fillStyle = muted;
+  context.lineWidth = 1;
+  for (let index = 0; index < 3; index += 1) {
+    const chartValue = upper - ((upper - lower) * index) / 2;
+    const chartY = y(chartValue);
+    context.beginPath();
+    context.moveTo(padding.left, chartY);
+    context.lineTo(width - padding.right, chartY);
+    context.stroke();
+    context.textAlign = "right";
+    context.fillText(money(chartValue), padding.left - 8, chartY);
+  }
+
+  context.beginPath();
+  values.forEach((number, index) => {
+    if (index === 0) context.moveTo(x(index), y(number));
+    else context.lineTo(x(index), y(number));
+  });
+  context.lineTo(x(values.length - 1), padding.top + chartHeight);
+  context.lineTo(x(0), padding.top + chartHeight);
+  context.closePath();
+  context.globalAlpha = .16;
+  context.fillStyle = accent;
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.beginPath();
+  values.forEach((number, index) => {
+    if (index === 0) context.moveTo(x(index), y(number));
+    else context.lineTo(x(index), y(number));
+  });
+  context.strokeStyle = ink;
+  context.lineWidth = 3;
+  context.lineJoin = "round";
+  context.stroke();
+
+  const selectedIndex = periods.indexOf(state.period);
+  values.forEach((number, index) => {
+    context.beginPath();
+    context.arc(x(index), y(number), index === selectedIndex ? 6 : 4, 0, Math.PI * 2);
+    context.fillStyle = index === selectedIndex ? accent : ink;
+    context.fill();
+    if (index === selectedIndex) {
+      context.strokeStyle = ink;
+      context.lineWidth = 2;
+      context.stroke();
+    }
+    context.fillStyle = muted;
+    context.textAlign = index === 0 ? "left" : index === labels.length - 1 ? "right" : "center";
+    context.textBaseline = "bottom";
+    context.fillText(labels[index], x(index), height - 3);
+  });
+
+  canvas.setAttribute("aria-label", `Balance projection: ${labels.map((label, index) => `${label} ${money(values[index])}`).join(", ")}`);
+}
+
 function render() {
   const labels = { current: "Current", day: "In a day", week: "In a week", month: "In a month" };
   const notes = { current: "Available now", day: "Projected for tomorrow", week: "Projected seven days from now", month: "Projected one month from now" };
   $("#periodLabel").textContent = labels[state.period];
   $("#balanceKicker").textContent = state.period === "current" ? "CURRENT BALANCE" : "PROJECTED BALANCE";
-  $("#balanceAmount").textContent = money(projectedBalance(state.period));
-  $("#balanceNote").textContent = notes[state.period];
+  const selectedBalance = projectedBalance(state.period);
+  $("#balanceAmount").textContent = money(selectedBalance);
+  renderBalanceVisualization(selectedBalance, labels, notes);
 
   const counts = {
     general: state.transactions.length,
@@ -202,6 +331,7 @@ function setType(type) {
 }
 
 $("#periodTrigger").addEventListener("click", () => toggleMenu($("#periodMenu"), $("#periodTrigger")));
+$("#viewTrigger").addEventListener("click", () => toggleMenu($("#viewMenu"), $("#viewTrigger")));
 $("#typeTrigger").addEventListener("click", () => toggleMenu($("#typeMenu"), $("#typeTrigger")));
 
 $("#periodMenu").addEventListener("click", (event) => {
@@ -210,6 +340,15 @@ $("#periodMenu").addEventListener("click", (event) => {
   state.period = option.dataset.period;
   $$("#periodMenu [role='option']").forEach((item) => item.setAttribute("aria-selected", String(item === option)));
   toggleMenu($("#periodMenu"), $("#periodTrigger"), false);
+  saveState();
+  render();
+});
+
+$("#viewMenu").addEventListener("click", (event) => {
+  const option = event.target.closest("[data-view]");
+  if (!option) return;
+  state.view = option.dataset.view;
+  toggleMenu($("#viewMenu"), $("#viewTrigger"), false);
   saveState();
   render();
 });
@@ -246,6 +385,7 @@ $("#themeToggle").addEventListener("click", () => {
   const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
   localStorage.setItem(THEME_KEY, nextTheme);
   applyTheme(nextTheme);
+  render();
 });
 $("#emptyAdd").addEventListener("click", openPanel);
 $("#closeAdd").addEventListener("click", closePanel);
@@ -292,13 +432,21 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     if (!$("#modalBackdrop").hidden) closePanel();
     toggleMenu($("#periodMenu"), $("#periodTrigger"), false);
+    toggleMenu($("#viewMenu"), $("#viewTrigger"), false);
     toggleMenu($("#typeMenu"), $("#typeTrigger"), false);
   }
 });
 
 document.addEventListener("click", (event) => {
   if (!$("#periodPicker").contains(event.target)) toggleMenu($("#periodMenu"), $("#periodTrigger"), false);
+  if (!$("#viewPicker").contains(event.target)) toggleMenu($("#viewMenu"), $("#viewTrigger"), false);
   if (!$("#typePicker").contains(event.target)) toggleMenu($("#typeMenu"), $("#typeTrigger"), false);
+});
+
+let chartResizeFrame;
+window.addEventListener("resize", () => {
+  cancelAnimationFrame(chartResizeFrame);
+  chartResizeFrame = requestAnimationFrame(drawBalanceChart);
 });
 
 function setDefaultDates() {

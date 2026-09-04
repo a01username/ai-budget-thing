@@ -10,16 +10,30 @@
   <body>
     <main class="app-shell">
       <header class="topbar">
-        <div class="period-picker" id="periodPicker">
-          <button class="period-trigger" id="periodTrigger" type="button" aria-expanded="false" aria-haspopup="listbox">
-            <span id="periodLabel">Current</span>
-            <span class="chevron" aria-hidden="true"></span>
-          </button>
-          <div class="period-menu" id="periodMenu" role="listbox" aria-label="Balance timeframe" hidden>
-            <button type="button" role="option" data-period="current" aria-selected="true">Current</button>
-            <button type="button" role="option" data-period="day">In a day</button>
-            <button type="button" role="option" data-period="week">In a week</button>
-            <button type="button" role="option" data-period="month">In a month</button>
+        <div class="left-controls">
+          <div class="period-picker" id="periodPicker">
+            <button class="period-trigger" id="periodTrigger" type="button" aria-expanded="false" aria-haspopup="listbox">
+              <span class="period-trigger-label"><span class="period-symbol" aria-hidden="true">◷</span><span id="periodLabel">Current</span></span>
+              <span class="chevron" aria-hidden="true"></span>
+            </button>
+            <div class="period-menu" id="periodMenu" role="listbox" aria-label="Balance timeframe" hidden>
+              <button type="button" role="option" data-period="current" aria-selected="true">Current</button>
+              <button type="button" role="option" data-period="day">In a day</button>
+              <button type="button" role="option" data-period="week">In a week</button>
+              <button type="button" role="option" data-period="month">In a month</button>
+            </div>
+          </div>
+
+          <div class="view-picker" id="viewPicker">
+            <button class="view-trigger" id="viewTrigger" type="button" aria-expanded="false" aria-haspopup="listbox" aria-label="Choose balance visualization">
+              <span class="view-trigger-label"><span class="view-symbol" aria-hidden="true">▥</span><span id="viewLabel">Amount</span></span>
+              <span class="chevron" aria-hidden="true"></span>
+            </button>
+            <div class="view-menu" id="viewMenu" role="listbox" aria-label="Balance visualization" hidden>
+              <button type="button" role="option" data-view="amount" aria-selected="true">Amount</button>
+              <button type="button" role="option" data-view="line">Line graph</button>
+              <button type="button" role="option" data-view="xp">XP bar</button>
+            </div>
           </div>
         </div>
 
@@ -36,7 +50,19 @@
 
       <section class="balance-hero" aria-live="polite">
         <p class="balance-kicker" id="balanceKicker">CURRENT BALANCE</p>
-        <h1 id="balanceAmount">$0.00</h1>
+        <div class="balance-view amount-view" id="amountView">
+          <h1 id="balanceAmount">$0.00</h1>
+        </div>
+        <div class="balance-view line-view" id="lineView" hidden>
+          <canvas id="balanceChart" height="180" role="img" aria-label="Balance projection line graph"></canvas>
+        </div>
+        <div class="balance-view xp-view" id="xpView" hidden>
+          <p class="xp-level">Level <strong id="xpLevel">0</strong></p>
+          <div class="xp-track" id="xpTrack" role="progressbar" aria-label="Progress toward next dollar level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="xp-fill" id="xpFill"></div>
+          </div>
+          <div class="xp-scale"><span>0¢</span><span id="xpProgress">0¢ toward Level 1</span><span>100¢</span></div>
+        </div>
         <p class="balance-note" id="balanceNote">Available now</p>
       </section>
 
