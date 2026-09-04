@@ -182,7 +182,7 @@ button { color: inherit; }
 .filter-button.active { background: var(--ink); color: var(--white); transform: translateX(5px); }
 .filter-button span { font-size: .75rem; opacity: .7; }
 
-.ledger { padding: 27px 28px 50px; }
+.ledger { min-width: 0; padding: 27px 28px 50px; }
 .ledger-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
 .ledger-header h2 { margin: 0; font-size: 1.7rem; font-weight: 500; }
 .ledger-header > p { margin: 0 0 3px; color: var(--muted); font-size: .82rem; }
@@ -195,6 +195,7 @@ button { color: inherit; }
   min-height: 64px;
   border-top: 2px solid var(--ink);
 }
+.transaction-row > * { min-width: 0; }
 .transaction-row:last-child { border-bottom: 2px solid var(--ink); }
 .transaction-name { font-size: 1.03rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .transaction-name small { display: block; margin-top: 4px; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
@@ -284,17 +285,27 @@ form input:focus, form select:focus { outline: 3px solid var(--accent); outline-
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+@media (max-width: 920px) {
+  .ledger-layout { display: block; }
+  .filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 14px 12px;
+    border-right: 0;
+    border-bottom: 3px solid var(--ink);
+  }
+  .filter-heading { display: none; }
+  .filter-button { flex: 0 0 auto; width: auto; min-height: 38px; margin: 0; gap: 10px; }
+  .filter-button.active { transform: none; }
+}
+
 @media (max-width: 760px) {
   .app-shell { width: calc(100% - 20px); margin: 10px; min-height: calc(100vh - 20px); }
   .topbar { height: 80px; padding: 12px; }
   .period-trigger { width: 160px; height: 50px; }
   .add-button { width: 50px; height: 50px; }
   .balance-hero { min-height: 155px; padding-top: 10px; }
-  .ledger-layout { display: block; }
-  .filters { display: flex; gap: 8px; overflow-x: auto; padding: 14px 12px; border-right: 0; border-bottom: 3px solid var(--ink); }
-  .filter-heading { display: none; }
-  .filter-button { flex: 0 0 auto; width: auto; min-height: 38px; margin: 0; gap: 10px; }
-  .filter-button.active { transform: none; }
   .ledger { padding: 22px 14px 40px; }
   .transaction-row { grid-template-columns: minmax(120px, 1fr) 90px 28px; gap: 9px; padding: 10px 0; }
   .status { display: none; }
