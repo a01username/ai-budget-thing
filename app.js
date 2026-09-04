@@ -152,8 +152,9 @@ function getGraphSeries() {
     const year = today.getFullYear();
     const month = today.getMonth();
     const days = new Date(year, month + 1, 0).getDate();
-    dates = Array.from({ length: days }, (_, index) => new Date(year, month, index + 1));
-    labels = dates.map((date) => String(date.getDate()));
+    for (let day = 7; day < days; day += 7) dates.push(new Date(year, month, day));
+    dates.push(new Date(year, month, days));
+    labels = dates.map((_, index) => `Week ${index + 1}`);
     description = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   } else {
     const year = today.getFullYear();
@@ -164,7 +165,9 @@ function getGraphSeries() {
 
   const currentIndex = range === "year"
     ? today.getMonth()
-    : dates.findIndex((date) => sameDay(date, today));
+    : range === "month"
+      ? dates.findIndex((date) => date >= today)
+      : dates.findIndex((date) => sameDay(date, today));
 
   return {
     range,
@@ -309,7 +312,7 @@ function drawBalanceChart() {
   values.forEach((number, index) => {
     context.beginPath();
     const isCurrent = index === series.currentIndex;
-    const pointSize = isCurrent ? 6 : series.range === "month" ? 2 : 4;
+    const pointSize = isCurrent ? 6 : 4;
     context.arc(x(index), y(number), pointSize, 0, Math.PI * 2);
     context.fillStyle = isCurrent ? accent : ink;
     context.fill();
@@ -319,10 +322,8 @@ function drawBalanceChart() {
       context.stroke();
     }
 
-    const monthLabelStep = Math.ceil(labels.length / 6);
-    const showMonthLabel = index === 0 || index === labels.length - 1 || index % monthLabelStep === 0;
     const showYearLabel = width >= 560 || index === labels.length - 1 || index % 2 === 0;
-    const showLabel = series.range === "month" ? showMonthLabel : series.range === "year" ? showYearLabel : true;
+    const showLabel = series.range === "year" ? showYearLabel : true;
     if (!showLabel) return;
     context.fillStyle = muted;
     context.textAlign = index === 0 ? "left" : index === labels.length - 1 ? "right" : "center";
