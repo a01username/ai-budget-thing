@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A simple personal finance tracker for balances, expenses, loans, and subscriptions." />
+    <meta name="description" content="A simple personal finance tracker for balances, transactions, loans, and subscriptions." />
     <title>Balance — Finance Tracker</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -40,7 +40,7 @@
           <button class="filter-button active" type="button" data-filter="general">General <span id="countGeneral">0</span></button>
           <button class="filter-button" type="button" data-filter="loans">Loans <span id="countLoans">0</span></button>
           <button class="filter-button" type="button" data-filter="subscriptions">Subscriptions <span id="countSubscriptions">0</span></button>
-          <button class="filter-button" type="button" data-filter="expenses">Expenses <span id="countExpenses">0</span></button>
+          <button class="filter-button" type="button" data-filter="expenses">Transactions <span id="countExpenses">0</span></button>
         </nav>
 
         <section class="ledger" aria-labelledby="ledgerTitle">
@@ -54,7 +54,7 @@
           <div class="transaction-list" id="transactionList"></div>
           <div class="empty-state" id="emptyState" hidden>
             <p>No entries yet.</p>
-            <button type="button" id="emptyAdd">Add expense now</button>
+            <button type="button" id="emptyAdd">Add transaction now</button>
           </div>
         </section>
       </div>
@@ -65,11 +65,11 @@
         <div class="panel-header">
           <div class="type-picker" id="typePicker">
             <button class="type-trigger" id="typeTrigger" type="button" aria-expanded="false" aria-haspopup="listbox">
-              <span id="typeLabel">Expense</span>
+              <span id="typeLabel">Transaction</span>
               <span class="chevron" aria-hidden="true"></span>
             </button>
             <div class="type-menu" id="typeMenu" role="listbox" aria-label="Entry type" hidden>
-              <button type="button" role="option" data-type="expenses" aria-selected="true">Expense</button>
+              <button type="button" role="option" data-type="expenses" aria-selected="true">Transaction</button>
               <button type="button" role="option" data-type="subscriptions">Subscription</button>
               <button type="button" role="option" data-type="loans">Loan</button>
             </div>
@@ -78,7 +78,7 @@
         </div>
 
         <form id="entryForm">
-          <h2 id="addTitle">Add expense</h2>
+          <h2 id="addTitle">Add transaction</h2>
           <p class="form-intro">Use a positive amount for money received and a negative amount for money spent.</p>
 
           <label for="entryName">Description</label>

@@ -56,7 +56,7 @@ function formatDate(dateString) {
 }
 
 function categoryLabel(category) {
-  return ({ loans: "Loan", subscriptions: "Subscription", expenses: "Expense" })[category] || "Entry";
+  return ({ loans: "Loan", subscriptions: "Subscription", expenses: "Transaction" })[category] || "Entry";
 }
 
 function getHorizon(period) {
@@ -173,7 +173,7 @@ function closePanel() {
 
 function setType(type) {
   selectedType = type;
-  const singular = { expenses: "Expense", subscriptions: "Subscription", loans: "Loan" }[type];
+  const singular = { expenses: "Transaction", subscriptions: "Subscription", loans: "Loan" }[type];
   $("#typeLabel").textContent = singular;
   $("#addTitle").textContent = `Add ${singular.toLowerCase()}`;
   $("#subscriptionFields").hidden = type !== "subscriptions";
