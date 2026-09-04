@@ -2,7 +2,7 @@ const STORAGE_KEY = "balance-finance-tracker-v2";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
-const today = startOfDay(new Date());
+let today = startOfDay(new Date());
 
 function startOfDay(date) {
   const copy = new Date(date);
@@ -157,6 +157,8 @@ function showToast(message) {
 
 function openPanel() {
   lastFocused = document.activeElement;
+  today = startOfDay(new Date());
+  setDefaultDates();
   $("#modalBackdrop").hidden = false;
   document.body.style.overflow = "hidden";
   setType(state.filter === "general" ? "expenses" : state.filter);
@@ -281,9 +283,10 @@ document.addEventListener("click", (event) => {
 });
 
 function setDefaultDates() {
-  $("#entryDate").value = toISO(today);
-  $("#nextDate").value = dateOffset(7);
-  $("#dueDate").value = dateOffset(14);
+  const currentDate = toISO(new Date());
+  $("#entryDate").value = currentDate;
+  $("#nextDate").value = currentDate;
+  $("#dueDate").value = currentDate;
 }
 
 setDefaultDates();
