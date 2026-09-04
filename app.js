@@ -244,7 +244,7 @@ $("#entryForm").addEventListener("submit", (event) => {
   }
 
   const entryDate = new Date(`${date}T12:00:00`);
-  const isCompleted = entryDate <= today;
+  const isCompleted = startOfDay(entryDate) <= today;
   const entry = {
     id: crypto.randomUUID(),
     name: String(form.get("name")).trim(),
