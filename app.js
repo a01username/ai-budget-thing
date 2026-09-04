@@ -26,6 +26,7 @@ const defaultState = {
   filter: "general",
   period: "current",
   view: "amount",
+  graphRange: "week",
   transactions: []
 };
 
@@ -75,9 +76,7 @@ function getHorizon(period) {
   const date = new Date(today);
   if (period === "day") date.setDate(date.getDate() + 1);
   if (period === "week") date.setDate(date.getDate() + 7);
-  if (period === "twoWeeks") date.setDate(date.getDate() + 14);
   if (period === "month") date.setMonth(date.getMonth() + 1);
-  if (period === "twoMonths") date.setMonth(date.getMonth() + 2);
   return date;
 }
 
@@ -89,9 +88,7 @@ function nextOccurrence(date, frequency) {
   return next;
 }
 
-function projectedBalance(period) {
-  if (period === "current") return state.balance;
-  const horizon = getHorizon(period);
+function projectedBalanceUntil(horizon) {
   let projected = state.balance;
 
   state.transactions.forEach((entry) => {
@@ -110,6 +107,96 @@ function projectedBalance(period) {
   return projected;
 }
 
+function projectedBalance(period) {
+  if (period === "current") return state.balance;
+  return projectedBalanceUntil(getHorizon(period));
+}
+
+function balanceOnDate(date) {
+  const target = startOfDay(date);
+  if (target > today) return projectedBalanceUntil(target);
+
+  let balance = state.balance;
+  state.transactions.forEach((entry) => {
+    const entryDate = startOfDay(new Date(`${entry.date}T12:00:00`));
+    if (entry.status === "completed" && entryDate > target && entryDate <= today) balance -= entry.amount;
+  });
+  return balance;
+}
+
+function sameDay(first, second) {
+  return first.getFullYear() === second.getFullYear()
+    && first.getMonth() === second.getMonth()
+    && first.getDate() === second.getDate();
+}
+
+function getGraphSeries() {
+  const range = ["week", "month", "year"].includes(state.graphRange) ? state.graphRange : "week";
+  state.graphRange = range;
+  let dates = [];
+  let labels = [];
+  let description = "";
+
+  if (range === "week") {
+    const monday = new Date(today);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    dates = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return date;
+    });
+    labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const sunday = dates[6];
+    description = `${monday.toLocaleDateString("en-US", { month: "short", day: "numeric" })}–${sunday.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
+  } else if (range === "month") {
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const days = new Date(year, month + 1, 0).getDate();
+    dates = Array.from({ length: days }, (_, index) => new Date(year, month, index + 1));
+    labels = dates.map((date) => String(date.getDate()));
+    description = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  } else {
+    const year = today.getFullYear();
+    dates = Array.from({ length: 12 }, (_, month) => new Date(year, month + 1, 0));
+    labels = dates.map((date) => date.toLocaleDateString("en-US", { month: "short" }));
+    description = String(year);
+  }
+
+  const currentIndex = range === "year"
+    ? today.getMonth()
+    : dates.findIndex((date) => sameDay(date, today));
+
+  return {
+    range,
+    dates,
+    labels,
+    description,
+    currentIndex,
+    values: dates.map(balanceOnDate)
+  };
+}
+
+function renderTimeframeControl(periodLabels) {
+  const standardOptions = [
+    { value: "current", label: periodLabels.current },
+    { value: "day", label: periodLabels.day },
+    { value: "week", label: periodLabels.week },
+    { value: "month", label: periodLabels.month }
+  ];
+  const graphOptions = [
+    { value: "week", label: "1 week" },
+    { value: "month", label: "1 month" },
+    { value: "year", label: "1 year" }
+  ];
+  const isGraph = state.view === "line";
+  const options = isGraph ? graphOptions : standardOptions;
+  const selected = isGraph ? state.graphRange : state.period;
+  $("#periodLabel").textContent = options.find((option) => option.value === selected)?.label || options[0].label;
+  $("#periodMenu").innerHTML = options.map((option) => `
+    <button type="button" role="option" data-period="${option.value}" aria-selected="${option.value === selected}">${option.label}</button>
+  `).join("");
+}
+
 function renderBalanceVisualization(value, periodLabels, periodNotes) {
   const viewLabels = { amount: "Amount", line: "Line graph", xp: "XP bar" };
   const activeView = viewLabels[state.view] ? state.view : "amount";
@@ -125,7 +212,9 @@ function renderBalanceVisualization(value, periodLabels, periodNotes) {
   $("#balanceNote").hidden = activeView === "xp";
 
   if (activeView === "line") {
-    $("#balanceNote").textContent = `${periodLabels[state.period]}: ${money(value)} · select a timeframe to highlight it`;
+    const series = getGraphSeries();
+    const rangeLabel = { week: "1 week", month: "1 month", year: "1 year" }[series.range];
+    $("#balanceNote").textContent = `${rangeLabel} · ${series.description}`;
     requestAnimationFrame(drawBalanceChart);
     return;
   }
@@ -164,9 +253,8 @@ function drawBalanceChart() {
   const muted = styles.getPropertyValue("--muted").trim();
   const accent = styles.getPropertyValue("--accent").trim();
   const softLine = styles.getPropertyValue("--soft-line").trim();
-  const periods = ["current", "day", "week", "twoWeeks", "month", "twoMonths"];
-  const labels = ["Now", "1d", "1w", "2w", "1m", "2m"];
-  const values = periods.map(projectedBalance);
+  const series = getGraphSeries();
+  const { labels, values } = series;
   const minimum = Math.min(...values);
   const maximum = Math.max(...values);
   const spread = Math.max(1, maximum - minimum);
@@ -218,31 +306,41 @@ function drawBalanceChart() {
   context.lineJoin = "round";
   context.stroke();
 
-  const selectedIndex = periods.indexOf(state.period);
   values.forEach((number, index) => {
     context.beginPath();
-    context.arc(x(index), y(number), index === selectedIndex ? 6 : 4, 0, Math.PI * 2);
-    context.fillStyle = index === selectedIndex ? accent : ink;
+    const isCurrent = index === series.currentIndex;
+    const pointSize = isCurrent ? 6 : series.range === "month" ? 2 : 4;
+    context.arc(x(index), y(number), pointSize, 0, Math.PI * 2);
+    context.fillStyle = isCurrent ? accent : ink;
     context.fill();
-    if (index === selectedIndex) {
+    if (isCurrent) {
       context.strokeStyle = ink;
       context.lineWidth = 2;
       context.stroke();
     }
+
+    const monthLabelStep = Math.ceil(labels.length / 6);
+    const showMonthLabel = index === 0 || index === labels.length - 1 || index % monthLabelStep === 0;
+    const showYearLabel = width >= 560 || index === labels.length - 1 || index % 2 === 0;
+    const showLabel = series.range === "month" ? showMonthLabel : series.range === "year" ? showYearLabel : true;
+    if (!showLabel) return;
     context.fillStyle = muted;
     context.textAlign = index === 0 ? "left" : index === labels.length - 1 ? "right" : "center";
     context.textBaseline = "bottom";
     context.fillText(labels[index], x(index), height - 3);
   });
 
-  canvas.setAttribute("aria-label", `Balance projection: ${labels.map((label, index) => `${label} ${money(values[index])}`).join(", ")}`);
+  const currentValue = values[Math.max(0, series.currentIndex)];
+  canvas.setAttribute("aria-label", `${series.description} balance graph. Current period ${money(currentValue)}. Starts at ${money(values[0])} and ends at ${money(values.at(-1))}.`);
 }
 
 function render() {
   const labels = { current: "Current", day: "In a day", week: "In a week", month: "In a month" };
   const notes = { current: "Available now", day: "Projected for tomorrow", week: "Projected seven days from now", month: "Projected one month from now" };
-  $("#periodLabel").textContent = labels[state.period];
-  $("#balanceKicker").textContent = state.period === "current" ? "CURRENT BALANCE" : "PROJECTED BALANCE";
+  renderTimeframeControl(labels);
+  $("#balanceKicker").textContent = state.view === "line"
+    ? "BALANCE HISTORY & PROJECTION"
+    : state.period === "current" ? "CURRENT BALANCE" : "PROJECTED BALANCE";
   const selectedBalance = projectedBalance(state.period);
   $("#balanceAmount").textContent = money(selectedBalance);
   renderBalanceVisualization(selectedBalance, labels, notes);
@@ -342,8 +440,8 @@ $("#typeTrigger").addEventListener("click", () => toggleMenu($("#typeMenu"), $("
 $("#periodMenu").addEventListener("click", (event) => {
   const option = event.target.closest("[data-period]");
   if (!option) return;
-  state.period = option.dataset.period;
-  $$("#periodMenu [role='option']").forEach((item) => item.setAttribute("aria-selected", String(item === option)));
+  if (state.view === "line") state.graphRange = option.dataset.period;
+  else state.period = option.dataset.period;
   toggleMenu($("#periodMenu"), $("#periodTrigger"), false);
   saveState();
   render();
