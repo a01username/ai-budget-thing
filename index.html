@@ -57,11 +57,14 @@
           <canvas id="balanceChart" height="180" role="img" aria-label="Balance projection line graph"></canvas>
         </div>
         <div class="balance-view xp-view" id="xpView" hidden>
-          <p class="xp-level">Level <strong id="xpLevel">0</strong></p>
-          <div class="xp-track" id="xpTrack" role="progressbar" aria-label="Progress toward next dollar level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-            <div class="xp-fill" id="xpFill"></div>
+          <p class="xp-level"><strong id="xpLevel">0</strong> <span id="xpLevelWord">Levels</span></p>
+          <div class="xp-bar-area" id="xpBarArea">
+            <span class="xp-balance-value" id="xpBalanceValue">$0.00</span>
+            <div class="xp-track" id="xpTrack" role="progressbar" aria-label="Progress toward next dollar level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="xp-fill" id="xpFill"></div>
+            </div>
+            <p class="xp-percent" id="xpPercent">0%</p>
           </div>
-          <div class="xp-scale"><span>0¢</span><span id="xpProgress">0¢ toward Level 1</span><span>100¢</span></div>
         </div>
         <p class="balance-note" id="balanceNote">Available now</p>
       </section>

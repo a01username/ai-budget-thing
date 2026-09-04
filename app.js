@@ -120,6 +120,7 @@ function renderBalanceVisualization(value, periodLabels, periodNotes) {
   $("#amountView").hidden = activeView !== "amount";
   $("#lineView").hidden = activeView !== "line";
   $("#xpView").hidden = activeView !== "xp";
+  $("#balanceNote").hidden = activeView === "xp";
 
   if (activeView === "line") {
     $("#balanceNote").textContent = `${periodLabels[state.period]}: ${money(value)} · select a timeframe to highlight it`;
@@ -132,11 +133,13 @@ function renderBalanceVisualization(value, periodLabels, periodNotes) {
     const level = Math.floor(totalCents / 100);
     const progress = totalCents % 100;
     $("#xpLevel").textContent = level;
+    $("#xpLevelWord").textContent = level === 1 ? "Level" : "Levels";
+    $("#xpBalanceValue").textContent = money(value);
+    $("#xpBarArea").style.setProperty("--xp-position", `${progress}%`);
     $("#xpFill").style.width = `${progress}%`;
-    $("#xpProgress").textContent = `${progress}¢ toward Level ${level + 1}`;
+    $("#xpPercent").textContent = `${progress}%`;
     $("#xpTrack").setAttribute("aria-valuenow", progress);
     $("#xpTrack").setAttribute("aria-valuetext", `${progress} percent toward level ${level + 1}`);
-    $("#balanceNote").textContent = value < 0 ? "XP progress starts at a $0.00 balance" : periodNotes[state.period];
     return;
   }
 
