@@ -1,4 +1,4 @@
-const STORAGE_KEY = "balance-finance-tracker-v1";
+const STORAGE_KEY = "balance-finance-tracker-v2";
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -21,15 +21,10 @@ function toISO(date) {
 }
 
 const defaultState = {
-  balance: 20,
+  balance: 0,
   filter: "general",
   period: "current",
-  transactions: [
-    { id: crypto.randomUUID(), name: "Allowance", amount: 10, category: "subscriptions", date: dateOffset(-1), frequency: "weekly", status: "completed" },
-    { id: crypto.randomUUID(), name: "Owe Jordan", amount: -25, category: "loans", date: dateOffset(4), person: "Jordan", status: "upcoming" },
-    { id: crypto.randomUUID(), name: "Bought a lemon", amount: -5, category: "expenses", date: dateOffset(-3), status: "completed" },
-    { id: crypto.randomUUID(), name: "Minecraft Realms", amount: -8, category: "subscriptions", date: dateOffset(8), frequency: "monthly", status: "upcoming" }
-  ]
+  transactions: []
 };
 
 let state = loadState();
