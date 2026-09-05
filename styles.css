@@ -52,7 +52,7 @@ button, input, select { font: inherit; }
 button { color: inherit; }
 
 .app-shell {
-  width: min(1160px, calc(100% - 40px));
+  width: calc(100% - 40px);
   min-height: calc(100vh - 40px);
   margin: 20px auto;
   border: 3px solid var(--ink);
