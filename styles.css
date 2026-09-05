@@ -205,7 +205,7 @@ button { color: inherit; }
 .balance-view[hidden] { display: none; }
 
 .line-view {
-  width: min(760px, 100%);
+  width: min(1200px, 100%);
   min-height: 168px;
   margin: 0 auto;
 }
@@ -217,7 +217,7 @@ button { color: inherit; }
 }
 
 .xp-view {
-  width: min(820px, 100%);
+  width: min(1200px, 100%);
   min-height: 250px;
   margin: 0 auto;
   padding-top: 2px;
