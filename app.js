@@ -291,6 +291,19 @@ function drawBalanceChart() {
     if (index === 0) context.moveTo(x(index), y(number));
     else context.lineTo(x(index), y(number));
   });
+  context.lineTo(x(values.length - 1), padding.top + chartHeight);
+  context.lineTo(x(0), padding.top + chartHeight);
+  context.closePath();
+  context.globalAlpha = 0.1;
+  context.fillStyle = ink;
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.beginPath();
+  values.forEach((number, index) => {
+    if (index === 0) context.moveTo(x(index), y(number));
+    else context.lineTo(x(index), y(number));
+  });
   context.strokeStyle = ink;
   context.lineWidth = 3;
   context.lineJoin = "round";
