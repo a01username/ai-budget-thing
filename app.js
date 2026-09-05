@@ -253,8 +253,8 @@ function drawBalanceChart() {
 
   const styles = getComputedStyle(document.documentElement);
   const ink = styles.getPropertyValue("--ink").trim();
+  const surface = styles.getPropertyValue("--white").trim();
   const muted = styles.getPropertyValue("--muted").trim();
-  const accent = styles.getPropertyValue("--accent").trim();
   const softLine = styles.getPropertyValue("--soft-line").trim();
   const series = getGraphSeries();
   const { labels, values } = series;
@@ -291,19 +291,6 @@ function drawBalanceChart() {
     if (index === 0) context.moveTo(x(index), y(number));
     else context.lineTo(x(index), y(number));
   });
-  context.lineTo(x(values.length - 1), padding.top + chartHeight);
-  context.lineTo(x(0), padding.top + chartHeight);
-  context.closePath();
-  context.globalAlpha = .16;
-  context.fillStyle = accent;
-  context.fill();
-  context.globalAlpha = 1;
-
-  context.beginPath();
-  values.forEach((number, index) => {
-    if (index === 0) context.moveTo(x(index), y(number));
-    else context.lineTo(x(index), y(number));
-  });
   context.strokeStyle = ink;
   context.lineWidth = 3;
   context.lineJoin = "round";
@@ -314,7 +301,7 @@ function drawBalanceChart() {
     const isCurrent = index === series.currentIndex;
     const pointSize = isCurrent ? 6 : 4;
     context.arc(x(index), y(number), pointSize, 0, Math.PI * 2);
-    context.fillStyle = isCurrent ? accent : ink;
+    context.fillStyle = isCurrent ? surface : ink;
     context.fill();
     if (isCurrent) {
       context.strokeStyle = ink;
